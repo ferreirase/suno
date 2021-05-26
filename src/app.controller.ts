@@ -1,19 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { ForbiddenException } from './exceptions/model-not-found.exception.filter';
-import { AllExceptionsFilter } from './exceptions/http-exception.filter';
+import { CustomException } from './exceptions/custom-exception';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): ForbiddenException {
+  getHello(): CustomException {
     return this.appService.getHello();
-  }
-
-  @Get('/filter')
-  getFilter(): AllExceptionsFilter {
-    return this.appService.getFilter();
   }
 }
