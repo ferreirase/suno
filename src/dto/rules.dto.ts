@@ -10,3 +10,9 @@ export class CreateRuleByDateDto {
   @IsArray()
   intervals: Array<IntervalsInterface>;
 }
+
+export class CreateRuleDailyDto {
+  @IsNotEmpty()
+  @IsArray()
+  intervals: Array<IntervalsInterface>;
+}

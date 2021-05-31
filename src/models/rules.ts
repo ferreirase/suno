@@ -7,7 +7,7 @@ export enum TypeRuleEnum {
   WK = 'weekly',
 }
 
-export class RuleByDate {
+export class Rule {
   @IsString()
   @IsNotEmpty()
   id: string;
@@ -16,11 +16,15 @@ export class RuleByDate {
   @IsNotEmpty()
   type: TypeRuleEnum;
 
-  @IsString()
-  @IsNotEmpty()
-  date: string;
-
   @IsArray()
   @IsNotEmpty()
   intervals: Array<IntervalsInterface>;
 }
+
+export class RuleByDate extends Rule {
+  @IsString()
+  @IsNotEmpty()
+  date: string;
+}
+
+export class RuleDaily extends Rule {}

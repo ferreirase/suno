@@ -36,7 +36,7 @@ describe('AppController', () => {
 
   describe('When search all Rules', () => {
     it('should return an array of rules or []', () => {
-      mockService.getAllRules.mockReturnValue([TestUtil.giveMeAValidRule()]);
+      mockService.getAllRules.mockReturnValue([TestUtil.giveMeARuleByDate()]);
       const rules = service.getAllRules();
       jest.spyOn(service, 'getAllRules').mockImplementation(() => rules);
 
@@ -47,7 +47,7 @@ describe('AppController', () => {
 
   describe('When create Rule by date', () => {
     it('should be successfull', () => {
-      const newRule = TestUtil.giveMeAValidRule();
+      const newRule = TestUtil.giveMeARuleByDate();
       mockService.createRuleByDate.mockReturnValue([]);
 
       jest.spyOn(service, 'createRuleByDate').mockImplementation(() => newRule);

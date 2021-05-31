@@ -5,7 +5,7 @@ import {
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
-import { RuleByDate } from '@models/rules';
+import { RuleByDate, RuleDaily } from '@models/rules';
 import { RulesRepository } from '@repositories/rules/rules.repository';
 import { isValid } from 'date-fns';
 
@@ -28,13 +28,28 @@ export class RulesService {
       (existentRule) => existentRule.date === rule.date,
     );
 
+    rule.intervals.map((interval) => {
+      const partOfTimeStart = interval.start.split(':');
+      const partOfTimeEnd = interval.end.split(':');
+
+      if (
+        isNaN(Number(partOfTimeStart[0])) ||
+        isNaN(Number(partOfTimeEnd[0]))
+      ) {
+        throw new HttpException(
+          'Some hour on intervals is invalid!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    });
+
     if (rulesByDate) {
       for (let index = 0; index < rule.intervals.length; index++) {
         rulesByDate.map((rl) => {
           rl.intervals.map((interval) => {
             if (interval.start === rule.intervals[index].start) {
               throw new HttpException(
-                'Some hour on intervals is invalid!',
+                'Some hour on intervals already exists!',
                 HttpStatus.BAD_REQUEST,
               );
             }
@@ -55,6 +70,45 @@ export class RulesService {
       throw new HttpException('Date invalid!', HttpStatus.BAD_REQUEST);
     }
 
-    this.rulesRepo.createRuleByDate(rule);
+    this.rulesRepo.createRule(rule);
+  }
+
+  createRuleDaily(rule: RuleDaily): any {
+    const rules: Array<RuleByDate> = this.getAllRules();
+    const rulesDaily = rules.filter(
+      (existentRule) => existentRule.type === rule.type,
+    );
+
+    rule.intervals.map((interval) => {
+      const partOfTimeStart = interval.start.split(':');
+      const partOfTimeEnd = interval.end.split(':');
+
+      if (
+        isNaN(Number(partOfTimeStart[0])) ||
+        isNaN(Number(partOfTimeEnd[0]))
+      ) {
+        throw new HttpException(
+          'Some hour on intervals is invalid!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    });
+
+    if (rulesDaily) {
+      for (let index = 0; index < rule.intervals.length; index++) {
+        rulesDaily.map((rl) => {
+          rl.intervals.map((interval) => {
+            if (interval.start === rule.intervals[index].start) {
+              throw new HttpException(
+                'Some hour on intervals already exists!',
+                HttpStatus.BAD_REQUEST,
+              );
+            }
+          });
+        });
+      }
+    }
+
+    this.rulesRepo.createRule(rule);
   }
 }

@@ -1,8 +1,7 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
-import { RuleByDate } from '@models/rules';
+import { Rule } from '@models/rules';
 import * as fs from 'fs';
 import * as path from 'path';
-import { CustomException } from '.././../exceptions/custom.exception';
 const fileName = path.basename('../../database/db.json');
 const filePath = path.join(__dirname, '..', '..', 'database', fileName);
 
@@ -20,7 +19,7 @@ export class RulesRepository {
     }
   }
 
-  public createRuleByDate(rule: RuleByDate): void {
+  public createRule(rule: Rule): void {
     fs.readFile(filePath, 'utf-8', (err, data) => {
       if (err)
         throw new HttpException(`${err.message}`, HttpStatus.BAD_REQUEST);
@@ -46,6 +45,6 @@ export class RulesRepository {
       });
     });
 
-    throw new CustomException('Rule Created Sucessfully!', HttpStatus.CREATED);
+    throw new HttpException('Rule Created Sucessfully!', HttpStatus.CREATED);
   }
 }
