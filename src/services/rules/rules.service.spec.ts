@@ -203,4 +203,111 @@ describe('Rules Services', () => {
       }
     });
   });
+
+  describe('When create a new Rule Weekly', () => {
+    it('should create successfully', () => {
+      const rule = TestUtil.giveMeARuleWeekly();
+      mockRepository.getAllRules.mockReturnValue([]);
+
+      service.createRuleWeekly(rule);
+
+      mockRepository.getAllRules.mockReturnValue([rule]);
+      const rules = service.getAllRules();
+
+      expect(rules).toBeInstanceOf(Array);
+      expect(rules[0]).toMatchObject(rule);
+      expect(mockRepository.createRule).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw error when one day on days array is invalid', () => {
+      const rule = TestUtil.giveMeARuleWeekly();
+      rule.days = ['TESTE'];
+      mockRepository.getAllRules.mockReturnValue([rule]);
+      mockRepository.createRule.mockReturnValue(
+        new HttpException(
+          'Day invalid on array of days!',
+          HttpStatus.BAD_REQUEST,
+        ),
+      );
+
+      try {
+        service.createRuleWeekly(rule);
+        expect(mockRepository.createRule).toHaveBeenCalledTimes(1);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toBe('Day invalid on array of days!');
+        expect(error.status).toBe(400);
+      }
+    });
+
+    it('should throw error when days array length is > 4', () => {
+      const rule = TestUtil.giveMeARuleWeekly();
+      rule.days.push('TUE', 'WED', 'THU');
+      mockRepository.getAllRules.mockReturnValue([rule]);
+      mockRepository.createRule.mockReturnValue(
+        new HttpException(
+          'Use the /daily route to register everyday!',
+          HttpStatus.BAD_REQUEST,
+        ),
+      );
+
+      try {
+        service.createRuleWeekly(rule);
+        expect(mockRepository.createRule).toHaveBeenCalledTimes(1);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toBe(
+          'Use the /daily route to register everyday!',
+        );
+        expect(error.status).toBe(400);
+      }
+    });
+
+    it('should throw error when hour on intervals is invalid', () => {
+      const rule = TestUtil.giveMeARuleWeekly();
+      mockRepository.getAllRules.mockReturnValue([rule]);
+      mockRepository.createRule.mockReturnValue(
+        new HttpException(
+          'Some hour on intervals is invalid!',
+          HttpStatus.BAD_REQUEST,
+        ),
+      );
+
+      rule.intervals = [
+        {
+          start: 'teste',
+          end: '19:00',
+        },
+      ];
+
+      try {
+        service.createRuleWeekly(rule);
+        expect(mockRepository.createRule).toHaveBeenCalledTimes(1);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toBe('Some hour on intervals is invalid!');
+        expect(error.status).toBe(400);
+      }
+    });
+
+    it('should throw error when days/hours relation already exists', () => {
+      const rule = TestUtil.giveMeARuleWeekly();
+      mockRepository.getAllRules.mockReturnValue([rule]);
+      mockRepository.createRule.mockReturnValue(
+        new HttpException(
+          'Some day/hour relation already exists!',
+          HttpStatus.BAD_REQUEST,
+        ),
+      );
+
+      try {
+        service.createRuleWeekly(rule);
+        expect(mockRepository.createRule).toHaveBeenCalledTimes(1);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toBe('Some day/hour relation already exists!');
+        expect(error.status).toBe(400);
+      }
+    });
+  });
 });

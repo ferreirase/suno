@@ -1,4 +1,4 @@
-import { RuleByDate, TypeRuleEnum } from '@models/rules';
+import { RuleByDate, TypeRuleEnum, RuleWeekly } from '@models/rules';
 import { v4 } from 'uuid';
 
 export default class TestUtil {
@@ -27,6 +27,21 @@ export default class TestUtil {
     ]),
       (rule.id = v4()),
       (rule.type = TypeRuleEnum['DL']);
+
+    return rule;
+  }
+
+  static giveMeARuleWeekly(): RuleWeekly {
+    const rule = new RuleWeekly();
+    (rule.days = ['MON', 'FRI']),
+      (rule.intervals = [
+        {
+          start: '10:00',
+          end: '11:00',
+        },
+      ]),
+      (rule.id = v4()),
+      (rule.type = TypeRuleEnum['WK']);
 
     return rule;
   }

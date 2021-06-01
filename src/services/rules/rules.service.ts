@@ -5,7 +5,13 @@ import {
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
-import { RuleByDate, RuleDaily } from '@models/rules';
+import {
+  Rule,
+  RuleByDate,
+  RuleDaily,
+  RuleWeekly,
+  DaysOfWeekEnum,
+} from '@models/rules';
 import { RulesRepository } from '@repositories/rules/rules.repository';
 import { isValid } from 'date-fns';
 
@@ -74,7 +80,7 @@ export class RulesService {
   }
 
   createRuleDaily(rule: RuleDaily): any {
-    const rules: Array<RuleByDate> = this.getAllRules();
+    const rules: Array<Rule> = this.getAllRules();
     const rulesDaily = rules.filter(
       (existentRule) => existentRule.type === rule.type,
     );
@@ -108,6 +114,58 @@ export class RulesService {
         });
       }
     }
+
+    this.rulesRepo.createRule(rule);
+  }
+
+  createRuleWeekly(rule: RuleWeekly): any {
+    const rules: Array<RuleWeekly> = this.getAllRules();
+    const rulesWeekly = rules.filter(
+      (existentRule) => existentRule.type === rule.type,
+    );
+
+    rule.days.map((day) => {
+      if (!DaysOfWeekEnum[`${day}`])
+        throw new HttpException(
+          'Day invalid on array of days!',
+          HttpStatus.BAD_REQUEST,
+        );
+    });
+
+    if (rule.days.length > 4)
+      throw new HttpException(
+        'Use the /daily route to register everyday!',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    rule.intervals.map((interval) => {
+      const partOfTimeStart = interval.start.split(':');
+      const partOfTimeEnd = interval.end.split(':');
+
+      if (isNaN(Number(partOfTimeStart[0])) || isNaN(Number(partOfTimeEnd[0])))
+        throw new HttpException(
+          'Some hour on intervals is invalid!',
+          HttpStatus.BAD_REQUEST,
+        );
+    });
+
+    if (rulesWeekly)
+      for (let index = 0; index < rule.intervals.length; index++) {
+        rulesWeekly.map((rl) => {
+          rl.intervals.map((interval) => {
+            rl.days.map((day) => {
+              if (
+                rule.days.includes(day) &&
+                interval.start === rule.intervals[index].start
+              )
+                throw new HttpException(
+                  'Some day/hour relation already exists!',
+                  HttpStatus.BAD_REQUEST,
+                );
+            });
+          });
+        });
+      }
 
     this.rulesRepo.createRule(rule);
   }

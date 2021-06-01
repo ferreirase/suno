@@ -22,3 +22,15 @@ export const CreateRuleDailySchema = Joi.object({
     )
     .required(),
 }).required();
+
+export const CreateRuleWeeklySchema = Joi.object({
+  days: Joi.array().items(Joi.string().required()).required(),
+  intervals: Joi.array()
+    .items(
+      Joi.object({
+        start: Joi.string().required(),
+        end: Joi.string().required(),
+      }).required(),
+    )
+    .required(),
+}).required();
