@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  UsePipes,
+  Param,
+} from '@nestjs/common';
 import { RulesService } from '@services/rules/rules.service';
 import { RuleByDate, TypeRuleEnum, RuleWeekly } from '@models/rules';
 import {
@@ -21,6 +29,11 @@ export class RulesController {
   @Get('/rules')
   getAllRules(): Array<any> {
     return this.ruleService.getAllRules();
+  }
+
+  @Delete('/rules/:id')
+  deleteRule(@Param('id') id: string): void {
+    return this.ruleService.deleteRule(id);
   }
 
   @Post('/rules/byDate')
@@ -61,6 +74,7 @@ export class RulesController {
   createRuleWeekly(@Body() createDto: CreateRuleWeeklyDto): void {
     const newRule: RuleWeekly = new RuleWeekly();
 
+    newRule.id = v4();
     newRule.type = TypeRuleEnum.WK;
 
     newRule.intervals = [

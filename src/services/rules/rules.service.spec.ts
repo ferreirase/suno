@@ -10,6 +10,7 @@ describe('Rules Services', () => {
   const mockRepository = {
     getAllRules: jest.fn(),
     createRule: jest.fn(),
+    deleteRule: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -29,6 +30,7 @@ describe('Rules Services', () => {
   beforeEach(() => {
     mockRepository.getAllRules.mockReset();
     mockRepository.createRule.mockReset();
+    mockRepository.deleteRule.mockReset();
   });
 
   describe('When search all Rules', () => {
@@ -39,6 +41,47 @@ describe('Rules Services', () => {
       expect(rules).toBeInstanceOf(Array);
       expect(rules).toMatchObject([]);
       expect(mockRepository.getAllRules).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('When delete one rule by ID', () => {
+    it('should delete successfully', () => {
+      const rule = TestUtil.giveMeARuleByDate();
+      mockRepository.getAllRules.mockReturnValue([rule]);
+
+      service.deleteRule(rule.id);
+      expect(mockRepository.deleteRule).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw error when not have rules', () => {
+      const rule = TestUtil.giveMeARuleByDate();
+      mockRepository.getAllRules.mockReturnValue(null);
+
+      try {
+        service.deleteRule(rule.id);
+        expect(mockRepository.deleteRule).toHaveBeenCalledTimes(1);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toBe('Not Rules here!');
+        expect(error.status).toBe(400);
+      }
+    });
+
+    it('should throw error when not found a rule', () => {
+      const rule = TestUtil.giveMeARuleByDate();
+      mockRepository.getAllRules.mockReturnValue([rule]);
+
+      const newRule = TestUtil.giveMeARuleWeekly();
+      newRule.id = 'teste';
+
+      try {
+        service.deleteRule(newRule.id);
+        expect(mockRepository.deleteRule).toHaveBeenCalledTimes(1);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toBe('Rule not found!');
+        expect(error.status).toBe(404);
+      }
     });
   });
 

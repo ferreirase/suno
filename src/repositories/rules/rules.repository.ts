@@ -19,6 +19,21 @@ export class RulesRepository {
     }
   }
 
+  public deleteRule(rules: Array<any>): void {
+    try {
+      fs.writeFile(filePath, JSON.stringify(rules), (err) => {
+        if (err) {
+          throw new HttpException(`${err.message}`, HttpStatus.BAD_REQUEST);
+        }
+        console.log('JSON data is saved.');
+      });
+
+      throw new HttpException('Rule Deleted Sucessfully!', HttpStatus.OK);
+    } catch (error) {
+      throw new HttpException(`${error.message}`, error.status);
+    }
+  }
+
   public createRule(rule: Rule): void {
     fs.readFile(filePath, 'utf-8', (err, data) => {
       if (err)

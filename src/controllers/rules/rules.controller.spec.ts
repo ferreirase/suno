@@ -13,6 +13,7 @@ describe('AppController', () => {
     createRuleByDate: jest.fn(),
     createRuleDaily: jest.fn(),
     createRuleWeekly: jest.fn(),
+    deleteRule: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -34,6 +35,9 @@ describe('AppController', () => {
   beforeEach(() => {
     mockService.getAllRules.mockReset();
     mockService.createRuleByDate.mockReset();
+    mockService.createRuleDaily.mockReset();
+    mockService.createRuleWeekly.mockReset();
+    mockService.deleteRule.mockReset();
   });
 
   describe('When search all Rules', () => {
@@ -47,8 +51,21 @@ describe('AppController', () => {
     });
   });
 
+  describe('When delete a Rule by ID', () => {
+    it('should delete successfully', () => {
+      const rule = TestUtil.giveMeARuleByDate();
+      mockService.getAllRules.mockReturnValue([rule]);
+
+      jest.spyOn(service, 'deleteRule').mockImplementation();
+
+      controller.deleteRule(rule.id);
+      expect(controller.getAllRules()).toBeInstanceOf(Array);
+      expect(service.deleteRule).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('When create Rule by date', () => {
-    it('should be successfull', () => {
+    it('should create successfully', () => {
       const newRule = TestUtil.giveMeARuleByDate();
       mockService.createRuleByDate.mockReturnValue([]);
 
@@ -64,7 +81,7 @@ describe('AppController', () => {
   });
 
   describe('When create Rule Daily', () => {
-    it('should be successfull', () => {
+    it('should be successfully', () => {
       const newRule = TestUtil.giveMeARuleDaily();
       mockService.createRuleDaily.mockReturnValue([]);
 
@@ -80,7 +97,7 @@ describe('AppController', () => {
   });
 
   describe('When create Rule Weekly', () => {
-    it('should be successfull', () => {
+    it('should be successfully', () => {
       const newRule = TestUtil.giveMeARuleWeekly();
       mockService.createRuleWeekly.mockReturnValue([]);
 

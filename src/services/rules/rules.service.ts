@@ -23,8 +23,25 @@ export class RulesService {
   ) {}
 
   getAllRules(): Array<any> {
+    const rules = this.rulesRepo.getAllRules();
+    return rules;
+  }
+
+  deleteRule(id: string): void {
     const result = this.rulesRepo.getAllRules();
-    return result;
+
+    if (!result || !result.length) {
+      throw new HttpException('Not Rules here!', HttpStatus.BAD_REQUEST);
+    }
+
+    const ruleExists = result.filter((rule) => rule.id === id);
+
+    if (!ruleExists || !ruleExists.length)
+      throw new HttpException('Rule not found!', HttpStatus.NOT_FOUND);
+
+    const rulesFiltered = result.filter((rule) => rule.id !== id);
+
+    return this.rulesRepo.deleteRule(rulesFiltered);
   }
 
   createRuleByDate(rule: RuleByDate): any {
