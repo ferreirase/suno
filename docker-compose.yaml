@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+
+  app:
+    build: .
+    container_name: suno-clinic
+    command: npm run start:dev
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/home/node/app
+  
