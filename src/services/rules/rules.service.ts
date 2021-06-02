@@ -11,9 +11,15 @@ import {
   RuleDaily,
   RuleWeekly,
   DaysOfWeekEnum,
+  TypeRuleEnum,
 } from '@models/rules';
 import { RulesRepository } from '@repositories/rules/rules.repository';
-import { isValid } from 'date-fns';
+import { isValid, eachDayOfInterval, isBefore } from 'date-fns';
+
+interface IReturnArrayAvailable {
+  start: string;
+  end: string;
+}
 
 @Injectable()
 export class RulesService {
@@ -25,6 +31,124 @@ export class RulesService {
   getAllRules(): Array<any> {
     const rules = this.rulesRepo.getAllRules();
     return rules;
+  }
+
+  getAvailableHoursBySince(since: string): Array<Object> {
+    const dateArraySince = JSON.parse(since).split('-');
+
+    const newDateSince = new Date(
+      Number(dateArraySince[2]),
+      Number(dateArraySince[1]) - 1,
+      Number(dateArraySince[0]),
+    );
+
+    if (!isValid(newDateSince)) {
+      throw new HttpException('Date is invalid!', HttpStatus.BAD_REQUEST);
+    }
+
+    const rules = this.rulesRepo.getAllRules();
+
+    if (!rules || !rules.length) {
+      throw new HttpException('Not Rules here!', HttpStatus.BAD_REQUEST);
+    }
+
+    const rulesByDate = rules.filter(
+      (rule: RuleByDate) =>
+        rule.type === TypeRuleEnum.BD && rule.date === JSON.parse(since),
+    );
+
+    const rulesDaily = rules.filter(
+      (rule: RuleDaily) => rule.type === TypeRuleEnum.DL,
+    );
+
+    const rulesWeekly: Array<any> = rules
+      .filter((rule: RuleWeekly) => rule.type === TypeRuleEnum.WK)
+      .filter((rule: RuleWeekly) =>
+        rule.days.includes(
+          newDateSince
+            .toLocaleString('en-US', { weekday: 'long' })
+            .toLowerCase(),
+        ),
+      );
+
+    const intervals: Array<IReturnArrayAvailable> = [];
+
+    if (rulesDaily)
+      rulesDaily.map((rule: RuleDaily) => intervals.push(...rule.intervals));
+
+    if (rulesByDate)
+      rulesByDate.map((rule: RuleByDate) => intervals.push(...rule.intervals));
+
+    if (rulesWeekly)
+      rulesWeekly.map((rule: RuleWeekly) => intervals.push(...rule.intervals));
+
+    return [
+      {
+        date: JSON.parse(since),
+        intervals: [
+          ...new Map(intervals.map((item) => [item.start, item])).values(),
+        ],
+      },
+    ];
+  }
+
+  getAvailableHours(since: string, until?: string): Array<Object> {
+    if (!until) return this.getAvailableHoursBySince(since);
+
+    const dateArraySince = JSON.parse(since).split('-');
+    const dateArrayUntil = JSON.parse(until).split('-');
+
+    const newDateSince = new Date(
+      Number(dateArraySince[2]),
+      Number(dateArraySince[1]) - 1,
+      Number(dateArraySince[0]),
+    );
+
+    const newDateUntil = new Date(
+      Number(dateArrayUntil[2]),
+      Number(dateArrayUntil[1]) - 1,
+      Number(dateArrayUntil[0]),
+    );
+
+    if (!isValid(newDateUntil) || !isValid(newDateSince)) {
+      throw new HttpException('Date is invalid!', HttpStatus.BAD_REQUEST);
+    }
+
+    if (isBefore(newDateUntil, newDateSince)) {
+      throw new HttpException(
+        'Until date must be after than Since date!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const everyDays = eachDayOfInterval({
+      start: newDateSince,
+      end: newDateUntil,
+    });
+
+    const datesRange = [];
+
+    everyDays.map((day) =>
+      datesRange.push(
+        `${day.getUTCDate() < 10 ? `0${day.getUTCDate()}` : day.getUTCDate()}-${
+          day.getUTCMonth() + 1 < 10
+            ? `0${day.getUTCMonth() + 1}`
+            : day.getUTCMonth() + 1
+        }-${
+          day.getUTCFullYear() < 10
+            ? `0${day.getUTCFullYear()}`
+            : day.getUTCFullYear()
+        }`,
+      ),
+    );
+
+    const result: Array<Object> = [];
+
+    datesRange.map((date) =>
+      result.push(...this.getAvailableHours(JSON.stringify(date))),
+    );
+
+    return result;
   }
 
   deleteRule(id: string): void {
@@ -171,18 +295,20 @@ export class RulesService {
         rulesWeekly.map((rl) => {
           rl.intervals.map((interval) => {
             rl.days.map((day) => {
-              if (
-                rule.days.includes(day) &&
-                interval.start === rule.intervals[index].start
-              )
-                throw new HttpException(
-                  'Some day/hour relation already exists!',
-                  HttpStatus.BAD_REQUEST,
-                );
+              rule.days.map((ruleDay) => {
+                if (day === DaysOfWeekEnum[`${ruleDay}`])
+                  if (interval.start === rule.intervals[index].start)
+                    throw new HttpException(
+                      'Some day/hour relation already exists!',
+                      HttpStatus.BAD_REQUEST,
+                    );
+              });
             });
           });
         });
       }
+
+    rule.days = rule.days.map((day) => DaysOfWeekEnum[`${day}`]);
 
     this.rulesRepo.createRule(rule);
   }

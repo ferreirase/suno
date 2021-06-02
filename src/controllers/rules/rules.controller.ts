@@ -6,6 +6,9 @@ import {
   Post,
   UsePipes,
   Param,
+  Req,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { RulesService } from '@services/rules/rules.service';
 import { RuleByDate, TypeRuleEnum, RuleWeekly } from '@models/rules';
@@ -21,6 +24,7 @@ import {
   CreateRuleWeeklySchema,
 } from '../../schemas/rulesSchemasValidation';
 import { v4 } from 'uuid';
+import { Request } from 'express';
 
 @Controller()
 export class RulesController {
@@ -29,6 +33,20 @@ export class RulesController {
   @Get('/rules')
   getAllRules(): Array<any> {
     return this.ruleService.getAllRules();
+  }
+
+  @Get('/rules/available')
+  getAvailableHours(@Req() { query }: Request): Array<Object> {
+    if (Object.keys(query.since).length === 0)
+      throw new HttpException(
+        'Insert since query param',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    return this.ruleService.getAvailableHours(
+      JSON.stringify(query.since),
+      JSON.stringify(query.until),
+    );
   }
 
   @Delete('/rules/:id')
@@ -82,6 +100,7 @@ export class RulesController {
         createDto.intervals.map((item) => [item['start'], item]),
       ).values(),
     ];
+
     newRule.days = [
       ...new Map(createDto.days.map((item) => [item[0], item])).values(),
     ];

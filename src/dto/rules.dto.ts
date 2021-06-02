@@ -1,6 +1,7 @@
 import { IsString, IsArray, IsNotEmpty } from 'class-validator';
 import IntervalsInterface from '../interfaces/intervals.interface';
 import { DaysOfWeekEnum } from '@models/rules';
+import { Request } from 'express';
 
 export class CreateRuleByDateDto {
   @IsNotEmpty()
@@ -26,4 +27,14 @@ export class CreateRuleWeeklyDto {
   @IsNotEmpty()
   @IsArray()
   days: Array<DaysOfWeekEnum | string>;
+}
+
+export class GetRuleAvailableDto {
+  @IsNotEmpty()
+  @IsString()
+  since: string;
+
+  @IsNotEmpty()
+  @IsString()
+  until: string;
 }
