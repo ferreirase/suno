@@ -37,6 +37,9 @@
 - Retorno: um objeto com os dados da nova regra diária cadastrada;
 ```
 
+<img src="/assets/createRuleDaily.gif" height="500" width="1200">
+
+
 #### /rules/byDate
 ```
 - Verbo: POST
@@ -44,6 +47,9 @@
 - Parâmetros: body { "date": "03-06-2021", "intervals": [{ "start": "15:00", "end": "16:00" }] }
 - Retorno: um objeto com os dados da nova regra por data cadastrada;
 ```
+
+<img src="/assets/createRuleByDate.gif" height="500" width="1200">
+
 
 #### /rules/weekly
 ```
@@ -54,6 +60,9 @@
 - Retorno: um objeto com os dados da nova regra semanal cadastrada;
 ```
 
+<img src="/assets/createRuleWeekly.gif" height="500" width="1200">
+
+
 #### /rules/:id
 ```
 - Verbo: DELETE
@@ -61,6 +70,9 @@
 - Parâmetros: route param { /72a74117-bf14-4741-b4ad-e7d2b555e044 }
 - Retorno: { "statusCode": 200, "message": "Rule Deleted Sucessfully!" }
 ```
+
+<img src="/assets/deleteRule.gif" height="500" width="1200">
+
 
 #### Testando
   1. O comando *``` yarn test ```* ou *``` npm run test ```* testa a aplicação;
