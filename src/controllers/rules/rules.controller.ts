@@ -11,7 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { RulesService } from '@services/rules/rules.service';
-import { RuleByDate, TypeRuleEnum, RuleWeekly } from '@models/rules';
+import { RuleByDate, TypeRuleEnum, RuleWeekly, RuleDaily } from '@models/rules';
 import {
   CreateRuleByDateDto,
   CreateRuleDailyDto,
@@ -25,7 +25,9 @@ import {
 } from '../../schemas/rulesSchemasValidation';
 import { v4 } from 'uuid';
 import { Request } from 'express';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('rules')
 @Controller()
 export class RulesController {
   constructor(private readonly ruleService: RulesService) {}
@@ -37,6 +39,12 @@ export class RulesController {
 
   @Get('/rules/available')
   getAvailableHours(@Req() { query }: Request): Array<Object> {
+    if (query.since === undefined)
+      throw new HttpException(
+        'Insert since query param',
+        HttpStatus.BAD_REQUEST,
+      );
+
     if (Object.keys(query.since).length === 0)
       throw new HttpException(
         'Insert since query param',
@@ -54,6 +62,7 @@ export class RulesController {
     return this.ruleService.deleteRule(id);
   }
 
+  @ApiResponse({ type: RuleByDate })
   @Post('/rules/byDate')
   @UsePipes(new JoiValidationPipe(CreateRuleByDateSchema))
   createRuleByDate(@Body() createDto: CreateRuleByDateDto): void {
@@ -71,6 +80,7 @@ export class RulesController {
     return this.ruleService.createRuleByDate(newRule);
   }
 
+  @ApiResponse({ type: RuleDaily })
   @Post('/rules/daily')
   @UsePipes(new JoiValidationPipe(CreateRuleDailySchema))
   createRuleDaily(@Body() createDto: CreateRuleDailyDto): void {
@@ -87,6 +97,7 @@ export class RulesController {
     return this.ruleService.createRuleDaily(newRule);
   }
 
+  @ApiResponse({ type: RuleWeekly })
   @Post('/rules/weekly')
   @UsePipes(new JoiValidationPipe(CreateRuleWeeklySchema))
   createRuleWeekly(@Body() createDto: CreateRuleWeeklyDto): void {
